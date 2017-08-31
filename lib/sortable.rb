@@ -174,7 +174,7 @@ module Huberry
       # Returns the first item in a list associated with the current item
       def first_item(list_name = nil)
         options = evaluate_sortable_options(list_name)
-        self.class.base_class.send("find_by_#{options[:column]}".to_sym, 1, :conditions => options[:conditions])
+        self.class.base_class.where(options[:conditions]).send("find_by_#{options[:column]}".to_sym, 1)
       end
       
       # Returns a boolean after determining if the current item is the first item in the specified list
@@ -187,7 +187,7 @@ module Huberry
         options = evaluate_sortable_options(list_name)
         options[:conditions].first << " AND #{self.class.table_name}.#{options[:column]} < ?"
         options[:conditions] << send(options[:column])
-        self.class.base_class.find(:all, :conditions => options[:conditions], :order => options[:column])
+        self.class.base_class.where(options[:conditions]).order(options[:column]).find(:all)
       end
       
       # Returns a boolean after determining if the current item is in the specified list
@@ -234,7 +234,7 @@ module Huberry
         options = evaluate_sortable_options(list_name)
         options[:conditions].first << " AND #{self.class.table_name}.#{options[:column]} IS NOT NULL"
         klass, conditions = [self.class.base_class, { :conditions => options[:conditions] }]
-        klass.send("find_by_#{options[:column]}".to_sym, klass.maximum(options[:column], conditions), conditions)
+        klass.where(conditions[:conditions]).send("find_by_#{options[:column]}".to_sym, klass.where(conditions[:conditions]).maximum(options[:column]))
       end
       
       # Returns a boolean after determining if the current item is the last item in the specified list
@@ -255,7 +255,7 @@ module Huberry
         options = evaluate_sortable_options(list_name)
         options[:conditions].first << " AND #{self.class.table_name}.#{options[:column]} > ?"
         options[:conditions] << send(options[:column])
-        self.class.base_class.find(:all, :conditions => options[:conditions], :order => "#{self.class.table_name}.#{options[:column]}")
+        self.class.base_class.where(options[:conditions]).order("#{self.class.table_name}.#{options[:column]}").find(:all)
       end
       
       # Moves the current item down one position in the specified list and saves
@@ -351,7 +351,7 @@ module Huberry
           options = evaluate_sortable_options(list_name)
           options[:conditions].first << " AND #{self.class.table_name}.#{options[:column]} > ? AND #{self.class.table_name}.#{options[:column]} IS NOT NULL"
           options[:conditions] << position
-          self.class.base_class.update_all "#{options[:column]} = #{options[:column]} #{direction == :up ? '-' : '+'} 1", options[:conditions]
+          self.class.base_class.where(options[:conditions]).update_all "#{options[:column]} = #{options[:column]} #{direction == :up ? '-' : '+'} 1"
         end
         
         # Removes the current item from the specified list

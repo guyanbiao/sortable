@@ -18,6 +18,7 @@ Requires ActiveRecord >= 2.0.0
 
 Works just like http://github.com/rails/acts_as_list
 
+  require 'sortable'
   class Todo < ActiveRecord::Base
     # schema
     #   id           :integer
